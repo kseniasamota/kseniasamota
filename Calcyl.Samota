@@ -1,25 +1,91 @@
-import java.util.Scanner;
+package ru.geekbrains;
 
-public class Calculator {
+public class ExpressiponCalc {
+
+    private String[] tokens;
+    private int pos;
+
+    public ExpressiponCalc(String expr) {
+        this.tokens = expr.split(" ");
+        this.pos = 0;
+    }
+
+    /*
+1+2-3+4-5
+-1
+    */
+
     public static void main(String[] args) {
-        System.out.println("введите первое число");
-        double a = new Scanner(System.in).nextDouble();
+        String expr = "2 * 3 / 4 + ( 2 - 15 / 2 )";
 
-        System.out.println("введите операцию ( +,-,/,*)");
-        char d = new Scanner(System.in).nextLine().charAt(0);
+        ExpressiponCalc expressiponCalc = new ExpressiponCalc(expr);
+        double result = expressiponCalc.parse();
+        System.out.println(expr + " = " + result);
+        System.out.println(2.0 * 3 / 4 + ( 2 - 15.0 / 2 ));
+    }
 
-        System.out.println("введите второе число");
-        double b = new Scanner(System.in).nextDouble();
+    private double parse() {
+        double first = multiply();
 
-        switch (d){
-            case '+':System.out.println("сложение - " + (a + b)); break;
-            case '-':System.out.println("вычитание - " + (a - b)); break;
-            case '*':System.out.println("умножение - " + (a * b)); break;
-            case '/':System.out.println("деление - " + (a / b)); break;
-            default: System.out.println("введите правильное действие"); break;
+        while (pos < tokens.length) {
+            String operator = tokens[pos];
+            if (!operator.equals("+") && !operator.equals("-")) {
+                break;
+            } else {
+                pos++;
+            }
 
+            double second = multiply();
+            if (operator.equals("+")) {
+                first += second;
+            } else {
+                first -= second;
+            }
         }
+        return first;
+    }
+
+    private double multiply() {
+        double first = factor();
+
+        while (pos < tokens.length) {
+            String operator = tokens[pos];
+            if (!operator.equals("*") && !operator.equals("/")) {
+                break;
+            } else {
+                pos++;
+            }
+
+            double second = factor();
+            if (operator.equals("*")) {
+                first *= second;
+            } else {
+                first /= second;
+            }
+        }
+        return first;
+    }
+
+    private double factor() {
+        String next = tokens[pos];
+        double result;
+        if (next.equals(" ( ")) {
+            pos++;
+            result = parse();
+            String closingBracket;
+            if (pos < tokens.length) {
+                closingBracket = tokens[pos];
+            } else {
+                throw new IllegalArgumentException("Unexpected and of expression");
+            }
+            if (closingBracket.equals(" ) ")) {
+                pos++;
+                return result;
+            }
+            throw new IllegalArgumentException(" ')' expected but " + closingBracket + " found");
+        }
+        pos++;
+        return Double.parseDouble(next);
 
     }
 
-}
